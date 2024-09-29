@@ -58,11 +58,14 @@ jobs:
           draft: false
           prerelease: false
         env:
-          GITEA_TOKEN: ${{ secrets.GL_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GL_TOKEN }}
+          GITEA_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: Save release URL
         run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
+
+      - name: List files in current directory
+        run: ls -la
 
       - name: Upload Go binary to release
         uses: actions/upload-release-asset@v1
