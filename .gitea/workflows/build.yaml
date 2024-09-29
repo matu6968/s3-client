@@ -35,7 +35,6 @@ jobs:
           latest_version=$(git describe --tags --abbrev=0 || echo "v0.0.0")
           new_version=$(echo $latest_version | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
 
-          # Sprawdzenie, czy nowy tag już istnieje
           if git rev-parse "$new_version" >/dev/null 2>&1; then
             echo "Tag $new_version already exists. Exiting."
             exit 1
@@ -45,6 +44,9 @@ jobs:
           
           git tag $new_version
           git push origin $new_version
+
+      - name: Verify Tag
+        run: git tag -l
 
       - name: Create Release
         id: create_release
