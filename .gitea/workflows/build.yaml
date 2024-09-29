@@ -19,60 +19,50 @@ jobs:
           go-version: '1.23.1'
 
       - name: Build Go binary for Linux
-        if: env.main_go_modified == 'true'
         run: |
           go mod tidy
           go build -o s3-client_linux.x86_64
 
       - name: Build Go binary for Linux (x86)
-        if: env.main_go_modified == 'true'
         run: |
           go mod tidy
           GOARCH=386 go build -o s3-client_linux.x86
 
       - name: Build Go binary for Linux (ARM64)
-        if: env.main_go_modified == 'true'
         run: |
           go mod tidy
           GOARCH=arm64 go build -o s3-client_linux.arm64
 
       - name: Build Go binary for Mac OS (x86_64)
-        if: env.main_go_modified == 'true'
         run: |
           go mod tidy
           GOOS=darwin GOARCH=amd64 go build -o s3-client_darwin.x86_64.app
 
       - name: Build Go binary for Mac OS (ARM64)
-        if: env.main_go_modified == 'true'
         run: |
           go mod tidy
           GOOS=darwin GOARCH=arm64 go build -o s3-client_darwin.arm64.app
 
       - name: Build Go binary for Linux (ARMv7)
-        if: env.main_go_modified == 'true'
         run: |
           go mod tidy
           GOARCH=arm go build -o s3-client_linux.armv7
 
       - name: Build Go binary for Linux (RISC-V)
-        if: env.main_go_modified == 'true'
         run: |
           go mod tidy
           GOARCH=riscv64 go build -o s3-client_linux.riscv64
 
       - name: Build Go binary for Windows
-        if: env.main_go_modified == 'true'
         run: |
           GOOS=windows GOARCH=amd64 go build -o s3-client_windows.x86_64.exe
 
       - name: Build Go binary for Windows (x86)
-        if: env.main_go_modified == 'true'
         run: |
           go mod tidy
           GOOS=windows GOARCH=386 go build -o s3-client_windows.x86.exe
 
       - name: Build Go binary for Windows (ARM64)
-        if: env.main_go_modified == 'true'
         run: |
           go mod tidy
           GOOS=windows GOARCH=arm64 go build -o s3-client_windows.arm64.exe
@@ -113,7 +103,6 @@ jobs:
 
       - name: Create Release
         id: create_release
-        if: env.main_go_modified == 'true'
         uses: actions/create-release@v1
         with:
           tag_name: ${{ env.new_version }}
@@ -129,7 +118,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: Upload Go binaries to release
-        if: env.main_go_modified == 'true'
         uses: softprops/action-gh-release@v1
         with:
           files: |
