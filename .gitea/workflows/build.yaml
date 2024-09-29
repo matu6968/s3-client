@@ -50,13 +50,13 @@ jobs:
         if: env.main_go_modified == 'true'
         run: |
           go mod tidy
-          GOOS=darwin GOARCH=386 go build -o s3-client_linux.x86
+          GOOS=darwin GOARCH=386 go build -o s3-client_darwin.x86_64.app
 
       - name: Build Go binary for Mac OS (ARM64)
         if: env.main_go_modified == 'true'
         run: |
           go mod tidy
-          GOOS=darwin GOARCH=arm64 go build -o s3-client_linux.arm64
+          GOOS=darwin GOARCH=arm64 go build -o s3-client_darwin.arm64.app
 
       - name: Build Go binary for Linux (ARMv7)
         if: env.main_go_modified == 'true'
@@ -151,6 +151,8 @@ jobs:
             ./s3-client_windows.x86_64.exe
             ./s3-client_windows.x86.exe
             ./s3-client_windows.arm64.exe
+            ./s3-client_darwin.x86_64.app
+            ./s3-client_darwin.arm64.app
 
           tag_name: ${{ env.new_version }}
           name: Release ${{ env.new_version }}
