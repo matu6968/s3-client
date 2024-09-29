@@ -42,13 +42,23 @@ returnurl = "your_return_url"
 ### Upload a file
 
 ```
-./s3-client -file "path/to/your/file" [optional] -directory "/exampledir"
+./s3-client_linux.x86_64 -file "path/to/your/file" [optional] -directory "/exampledir"
 ```
 
 ### List files
 
 ```
-./s3-client -list
+./s3-client_linux.x86_64 -list
+```
+
+### Delete files
+
+```
+./s3-client_linux.x86_64 -delete "filename.png"
+
+or with an directory
+
+./s3-client_linux.x86_64 -delete "/dir1/filename.png"
 ```
 
 ### Help message
