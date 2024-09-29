@@ -58,8 +58,8 @@ jobs:
           draft: false
           prerelease: false
         env:
-          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          GITEA_TOKEN: ${{ secrets.GL_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GL_TOKEN }}
 
       - name: Save release URL
         run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
