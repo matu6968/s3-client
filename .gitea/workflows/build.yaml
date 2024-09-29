@@ -35,6 +35,7 @@ jobs:
           latest_version=$(git describe --tags --abbrev=0 || echo "v0.0.0")
           new_version=$(echo $latest_version | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
 
+          # Sprawdzenie, czy nowy tag już istnieje
           if git rev-parse "$new_version" >/dev/null 2>&1; then
             echo "Tag $new_version already exists. Exiting."
             exit 1
@@ -46,6 +47,7 @@ jobs:
           git push origin $new_version
 
       - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: ${{ env.new_version }}
@@ -59,10 +61,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
+      - name: Save release URL
+        run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
+
       - name: Upload Go binary to release
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ env.upload_url }}
           asset_path: ./s3-client
           asset_name: s3-client_${{ env.new_version }}_linux_amd64
           asset_content_type: application/octet-stream
