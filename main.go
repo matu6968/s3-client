@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
@@ -21,6 +22,7 @@ func main() {
 	directory := flag.String("directory", "", "Directory in the S3 bucket to upload the file to")
 	listFiles := flag.Bool("list", false, "List files in the S3 bucket")
 	deleteFile := flag.String("delete", "", "Path to the file to delete from the S3 bucket")
+	overwrite := flag.Bool("overwrite", false, "Overwrite the file if it already exists on S3")
 	flag.Parse()
 
 	if *configPath == "" {
@@ -92,6 +94,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Check if the file exists before attempting to open it
 	if _, err := os.Stat(*filePath); os.IsNotExist(err) {
 		fmt.Printf("File does not exist: %s\n", *filePath)
 		os.Exit(1)
@@ -112,6 +115,23 @@ func main() {
 		key = filepath.Join(dir, key)
 	}
 	key = filepath.ToSlash(key)
+
+	// Check if the file already exists on S3
+	headObjectInput := &s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	}
+	_, err = svc.HeadObject(headObjectInput)
+	if err == nil && !*overwrite {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Printf("The file with the same filename already exists on S3. Do you want to overwrite? [y/n] > ")
+		response, _ := reader.ReadString('\n')
+		response = strings.TrimSpace(response)
+		if strings.ToLower(response) != "y" {
+			fmt.Println("Upload cancelled.")
+			os.Exit(0)
+		}
+	}
 
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(bucket),
