@@ -92,6 +92,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if _, err := os.Stat(*filePath); os.IsNotExist(err) {
+		fmt.Printf("File does not exist: %s\n", *filePath)
+		os.Exit(1)
+	}
+
 	file, err := os.Open(*filePath)
 	if err != nil {
 		fmt.Printf("Error opening file: %s\n", err)
