@@ -71,6 +71,3 @@ jobs:
           asset_path: ./s3-client
           asset_name: s3-client_${{ env.new_version }}_linux_amd64
           asset_content_type: application/octet-stream
-        env:
-          GITEA_TOKEN: ${{ secrets.TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
