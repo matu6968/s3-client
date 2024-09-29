@@ -23,7 +23,19 @@ func main() {
 	listFiles := flag.Bool("list", false, "List files in the S3 bucket")
 	deleteFile := flag.String("delete", "", "Path to the file to delete from the S3 bucket")
 	overwrite := flag.Bool("overwrite", false, "Overwrite the file if it already exists on S3")
+	verbose := flag.Bool("v", false, "Enable verbose output")
 	flag.Parse()
+
+	if *verbose {
+		fmt.Println("Debug Information:")
+		fmt.Printf("File Path: %s\n", *filePath)
+		fmt.Printf("Force Path Style: %t\n", *forcePathStyle)
+		fmt.Printf("Config Path: %s\n", *configPath)
+		fmt.Printf("Directory: %s\n", *directory)
+		fmt.Printf("List Files: %t\n", *listFiles)
+		fmt.Printf("Delete File: %s\n", *deleteFile)
+		fmt.Printf("Overwrite: %t\n", *overwrite)
+	}
 
 	if *configPath == "" {
 		homeDir, err := os.UserHomeDir()
@@ -94,7 +106,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Check if the file exists before attempting to open it
 	if _, err := os.Stat(*filePath); os.IsNotExist(err) {
 		fmt.Printf("File does not exist: %s\n", *filePath)
 		os.Exit(1)
@@ -116,7 +127,6 @@ func main() {
 	}
 	key = filepath.ToSlash(key)
 
-	// Check if the file already exists on S3
 	headObjectInput := &s3.HeadObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -133,15 +143,23 @@ func main() {
 		}
 	}
 
-	_, err = svc.PutObject(&s3.PutObjectInput{
+	putObjectInput := &s3.PutObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 		Body:   file,
-	})
+	}
+	req, _ := svc.PutObjectRequest(putObjectInput)
+	err = req.Send()
 
 	if err != nil {
 		fmt.Printf("Error uploading file to S3: %s\n", err)
 		os.Exit(1)
+	}
+
+	if *verbose {
+		fmt.Printf("Uploaded file: %s\n", *filePath)
+		fmt.Printf("Endpoint: %s\n", endpoint)
+		fmt.Printf("HTTP Status Code: %d\n", req.HTTPResponse.StatusCode)
 	}
 
 	fullURL := fmt.Sprintf("%s/%s",
