@@ -34,10 +34,46 @@ jobs:
           go mod tidy
           go build -o s3-client_linux.x86_64
 
+      - name: Build Go binary for Linux (x86)
+        if: env.main_go_modified == 'true'
+        run: |
+          go mod tidy
+          GOARCH=386 go build -o s3-client_linux.x86
+
+      - name: Build Go binary for Linux (ARM64)
+        if: env.main_go_modified == 'true'
+        run: |
+          go mod tidy
+          GOARCH=arm64 go build -o s3-client_linux.arm64
+
+      - name: Build Go binary for Linux (ARMv7)
+        if: env.main_go_modified == 'true'
+        run: |
+          go mod tidy
+          GOARCH=arm go build -o s3-client_linux.armv7
+
+      - name: Build Go binary for Linux (RISC-V)
+        if: env.main_go_modified == 'true'
+        run: |
+          go mod tidy
+          GOARCH=riscv64 go build -o s3-client_linux.riscv64
+
       - name: Build Go binary for Windows
         if: env.main_go_modified == 'true'
         run: |
           GOOS=windows GOARCH=amd64 go build -o s3-client_windows.x86_64.exe
+
+      - name: Build Go binary for Windows (x86)
+        if: env.main_go_modified == 'true'
+        run: |
+          go mod tidy
+          GOOS=windows GOARCH=386 go build -o s3-client_windows.x86.exe
+
+      - name: Build Go binary for Windows (ARM64)
+        if: env.main_go_modified == 'true'
+        run: |
+          go mod tidy
+          GOOS=windows GOARCH=arm64 go build -o s3-client_windows.arm64.exe
 
       - name: Get latest commit ID
         id: get_commit
@@ -96,7 +132,14 @@ jobs:
         with:
           files: |
             ./s3-client_linux.x86_64
+            ./s3-client_linux.x86
+            ./s3-client_linux.armv7
+            ./s3-client_linux.arm64
+            ./s3-client_linux.riscv64
             ./s3-client_windows.x86_64.exe
+            ./s3-client_windows.x86.exe
+            ./s3-client_windows.arm64.exe
+
           tag_name: ${{ env.new_version }}
           name: Release ${{ env.new_version }}
           body: |
