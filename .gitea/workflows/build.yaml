@@ -1,0 +1,88 @@
+version: '1'
+name: Release Version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.23.1'
+
+      - name: Build Go binary for Linux
+        run: |
+          go mod tidy
+          go build -o s3-client_linux.x86_64
+
+      - name: Build Go binary for Windows
+        run: |
+          GOOS=windows GOARCH=amd64 go build -o s3-client_windows.x86_64.exe
+
+      - name: Get latest commit ID
+        id: get_commit
+        run: |
+          commit_id=$(git rev-parse HEAD)
+          echo "commit_id=$commit_id" >> $GITHUB_ENV
+
+      - name: Get latest version and increment
+        id: create_version
+        run: |
+          git fetch --tags
+
+          latest_version=$(git tag | sort -V | tail -n 1 || echo "v0.0.0")
+          new_version=$(echo $latest_version | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
+
+          while git rev-parse "$new_version" >/dev/null 2>&1; do
+            new_version=$(echo $new_version | awk -F. '{$3+=1; printf "v%d.%d.%d", $1, $2, $3}')
+          done
+
+          echo "latest_version=$latest_version" >> $GITHUB_ENV
+          echo "new_version=$new_version" >> $GITHUB_ENV
+          
+          if git rev-parse "$new_version" >/dev/null 2>&1; then
+            echo "Tag $new_version already exists. Exiting."
+            exit 1
+          fi
+          
+          git tag $new_version
+          git push origin $new_version
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.new_version }}
+          release_name: Release ${{ env.new_version }}
+          release_description: |
+            Automatic release by Gitea CI
+            Release version ${{ env.new_version }}.
+            Commit ID: ${{ env.commit_id }}
+          draft: false
+          prerelease: false
+        env:
+          GITEA_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Upload Go binaries to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./s3-client_linux.x86_64
+            ./s3-client_windows.x86_64.exe
+          tag_name: ${{ env.new_version }}
+          name: Release ${{ env.new_version }}
+          body: |
+            Automatic release by Gitea CI
+            Release version ${{ env.new_version }}.
+            Commit ID: ${{ env.commit_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
