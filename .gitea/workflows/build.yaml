@@ -65,12 +65,8 @@ jobs:
         run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
 
       - name: Upload Go binary to release
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ env.upload_url }}
-          asset_path: ./s3-client
-          asset_name: s3-client_${{ env.new_version }}_linux_amd64
-          asset_content_type: application/octet-stream
+          files: ./s3-client
         env:
-          GITEA_TOKEN: ${{ secrets.TOKEN }}
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
