@@ -48,6 +48,11 @@ jobs:
       - name: Get latest version and increment
         id: create_version
         run: |
+          if [ "${{ env.main_go_modified }}" = "false" ]; then
+            echo "No changes in main.go, skipping version increment and release creation."
+            exit 0
+          fi
+
           git fetch --tags
 
           latest_version=$(git tag | sort -V | tail -n 1 || echo "v0.0.0")
@@ -70,6 +75,7 @@ jobs:
 
       - name: Create Release
         id: create_release
+        if: env.main_go_modified == 'true'
         uses: actions/create-release@v1
         with:
           tag_name: ${{ env.new_version }}
@@ -85,6 +91,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: Upload Go binaries to release
+        if: env.main_go_modified == 'true'
         uses: softprops/action-gh-release@v1
         with:
           files: |
