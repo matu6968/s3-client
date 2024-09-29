@@ -45,7 +45,7 @@ func main() {
 		}
 
 		if *configPath == "" {
-			fmt.Println("No config file found. Please specify a config file using --config or create one in the default locations.")
+			fmt.Println("No config file found. Please specify a config file using -config or create one in the default locations.")
 			os.Exit(1)
 		}
 	}
