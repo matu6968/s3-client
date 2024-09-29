@@ -46,6 +46,18 @@ jobs:
           go mod tidy
           GOARCH=arm64 go build -o s3-client_linux.arm64
 
+      - name: Build Go binary for Mac OS (x86_64)
+        if: env.main_go_modified == 'true'
+        run: |
+          go mod tidy
+          GOOS=darwin GOARCH=386 go build -o s3-client_linux.x86
+
+      - name: Build Go binary for Mac OS (ARM64)
+        if: env.main_go_modified == 'true'
+        run: |
+          go mod tidy
+          GOOS=darwin GOARCH=arm64 go build -o s3-client_linux.arm64
+
       - name: Build Go binary for Linux (ARMv7)
         if: env.main_go_modified == 'true'
         run: |
