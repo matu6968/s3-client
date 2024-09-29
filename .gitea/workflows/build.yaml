@@ -21,13 +21,13 @@ jobs:
       - name: Build Go binary
         run: |
           go mod tidy
-          go build -o s3-client          
+          go build -o s3-client
 
       - name: Get latest commit ID
         id: get_commit
         run: |
           commit_id=$(git rev-parse HEAD)
-          echo "commit_id=$commit_id" >> $GITHUB_ENV          
+          echo "commit_id=$commit_id" >> $GITHUB_ENV
 
       - name: Get latest version and increment
         id: create_version
@@ -35,6 +35,7 @@ jobs:
           latest_version=$(git describe --tags --abbrev=0 || echo "v0.0.0")
           new_version=$(echo $latest_version | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
 
+          # Sprawdzenie, czy nowy tag już istnieje
           if git rev-parse "$new_version" >/dev/null 2>&1; then
             echo "Tag $new_version already exists. Exiting."
             exit 1
@@ -43,7 +44,7 @@ jobs:
           echo "new_version=$new_version" >> $GITHUB_ENV
           
           git tag $new_version
-          git push origin $new_version          
+          git push origin $new_version
 
       - name: Create Release
         id: create_release
@@ -54,15 +55,12 @@ jobs:
           release_description: |
             Automatic release by Gitea CI
             Release version ${{ env.new_version }}.
-            Commit ID: ${{ env.commit_id }}            
+            Commit ID: ${{ env.commit_id }}
           draft: false
           prerelease: false
         env:
           GITEA_TOKEN: ${{ secrets.TOKEN }}
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
-
-      - name: Save release URL
-        run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
 
       - name: Upload Go binary to release
         uses: softprops/action-gh-release@v1
