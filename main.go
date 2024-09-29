@@ -20,6 +20,7 @@ func main() {
 	configPath := flag.String("config", "", "Path to the configuration file")
 	directory := flag.String("directory", "", "Directory in the S3 bucket to upload the file to")
 	listFiles := flag.Bool("list", false, "List files in the S3 bucket")
+	deleteFile := flag.String("delete", "", "Path to the file to delete from the S3 bucket")
 	flag.Parse()
 
 	if *configPath == "" {
@@ -77,6 +78,11 @@ func main() {
 
 	if *listFiles {
 		listBucketFiles(svc, bucket)
+		return
+	}
+
+	if *deleteFile != "" {
+		deleteS3File(svc, bucket, *deleteFile)
 		return
 	}
 
@@ -140,4 +146,29 @@ func listBucketFiles(svc *s3.S3, bucket string) {
 		fmt.Printf("Error listing files in S3 bucket: %s\n", err)
 		os.Exit(1)
 	}
+}
+
+func deleteS3File(svc *s3.S3, bucket, filePath string) {
+	filePath = strings.TrimPrefix(filePath, "/")
+	_, err := svc.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(filePath),
+	})
+
+	if err != nil {
+		fmt.Printf("Error deleting file from S3: %s\n", err)
+		os.Exit(1)
+	}
+
+	err = svc.WaitUntilObjectNotExists(&s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(filePath),
+	})
+
+	if err != nil {
+		fmt.Printf("Error waiting for file deletion: %s\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Successfully deleted file: %s\n", filePath)
 }
