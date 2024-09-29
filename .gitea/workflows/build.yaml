@@ -36,14 +36,22 @@ jobs:
       - name: Get latest version and increment
         id: create_version
         run: |
-          latest_version=$(git describe --tags --abbrev=0 || echo "v0.0.0")
+          git fetch --tags
+
+          latest_version=$(git tag | sort -V | tail -n 1 || echo "v0.0.0")
           new_version=$(echo $latest_version | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
 
           while git rev-parse "$new_version" >/dev/null 2>&1; do
             new_version=$(echo $new_version | awk -F. '{$3+=1; printf "v%d.%d.%d", $1, $2, $3}')
           done
 
+          echo "latest_version=$latest_version" >> $GITHUB_ENV
           echo "new_version=$new_version" >> $GITHUB_ENV
+          
+          if git rev-parse "$new_version" >/dev/null 2>&1; then
+            echo "Tag $new_version already exists. Exiting."
+            exit 1
+          fi
           
           git tag $new_version
           git push origin $new_version
