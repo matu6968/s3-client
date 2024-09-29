@@ -23,21 +23,27 @@ jobs:
           go mod tidy
           go build -o s3-client
 
-      - name: Create release version
-        id: create_version
-        run: |
-          latest_version=$(git describe --tags --abbrev=0 || echo "v0.0.0")
-          new_version=$(echo $latest_version | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
-          echo "new_version=$new_version" >> $GITHUB_ENV
-          
-          git tag $new_version
-          git push origin $new_version
-
       - name: Get latest commit ID
         id: get_commit
         run: |
           commit_id=$(git rev-parse HEAD)
           echo "commit_id=$commit_id" >> $GITHUB_ENV
+
+      - name: Get latest version and increment
+        id: create_version
+        run: |
+          latest_version=$(git describe --tags --abbrev=0 || echo "v0.0.0")
+          new_version=$(echo $latest_version | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
+
+          if git rev-parse "$new_version" >/dev/null 2>&1; then
+            echo "Tag $new_version already exists. Exiting."
+            exit 1
+          fi
+
+          echo "new_version=$new_version" >> $GITHUB_ENV
+          
+          git tag $new_version
+          git push origin $new_version
 
       - name: Create Release
         uses: actions/create-release@v1
