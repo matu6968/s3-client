@@ -1,4 +1,4 @@
-module main.go
+module github.com/matu6968/s3-client
 
 go 1.23
 
