@@ -4,13 +4,13 @@ This is a simple command-line tool to interact with an S3-compatible storage ser
 
 ## Prerequisites
 
-- Go (1.23.1 or later)
+- Go (1.23 or later)
 
 ## Installation
 
 1. Clone the repository:
    ```
-   git clone https://git.fluffy.pw/leafus/s3-client
+   git clone https://github.com/matu6968/s3-client
    ```
 
 2. Go to the project directory:
